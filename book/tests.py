@@ -1,5 +1,9 @@
 from django.test import TestCase
+from rest_framework import status
+from rest_framework.utils import json
+
 from .models import Book
+from rest_framework.test import APIClient
 
 
 class TestBookModel(TestCase):
@@ -36,3 +40,38 @@ class TestBookModel(TestCase):
         self.set_test_param('test_category')
         book = Book(category=self.test_param)
         self.assertEqual(book.category, self.test_param)
+
+
+class TestBookCrud(TestCase):
+    BOOK_URL = '/api/book/'
+
+    def setUp(self):
+        self.api_client = APIClient()
+        self.valid_book = {
+            'title': 'harry potter and the deathly hallows',
+            'author': 'J K Rowling',
+            'category': 'fantasy',
+            'publisher': 'ana',
+            'vendor': ['ahram', 'akhbar', 'gmhorya'],
+            'type': ['audio', 'paperbook', 'kindle'],
+        }
+        self.invalid_book = {
+            'title': 'invalid',
+            'author': '',
+            'category': '',
+            'publisher': 'ana',
+        }
+
+    def test_end_point_exist(self):
+        response = self.api_client.post(self.BOOK_URL)
+        self.assertNotEquals(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_valid_book(self):
+        response = self.api_client.post(self.BOOK_URL, data=json.dumps(self.valid_book), content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data, self.valid_book)
+
+    def test_does_not_create_invalid_book(self):
+        response = self.api_client.post(self.BOOK_URL, data=json.dumps(self.invalid_book), content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+

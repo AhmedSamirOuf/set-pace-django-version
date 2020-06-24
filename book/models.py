@@ -8,3 +8,5 @@ class Book(models.Model):
     vendors = models.TextField(null=True, max_length=30)
     types = models.TextField(null=True, max_length=15)
     category = models.CharField(max_length=15, default='thriller')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
